@@ -12,7 +12,6 @@ env:
 
 jobs:
   deploy:
-
     name: 🔄 Build & Deploy to Cloud Run
     runs-on: ubuntu-latest
     environment: deploy
@@ -32,14 +31,14 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
           install_components: 'beta'
 
-      - name: 🐳 Build & Push Docker Image
+      - name: 🐳 Build & Push Docker Image to GCR
         run: |
-          IMAGE="us-central1-docker.pkg.dev/$PROJECT_ID/backend-images/$SERVICE_NAME"
+          IMAGE="gcr.io/$PROJECT_ID/$SERVICE_NAME"
           gcloud builds submit --tag $IMAGE .
 
-      - name: 🚀 Deploy to Cloud Run from Docker Image
+      - name: 🚀 Deploy to Cloud Run from Docker Image in GCR
         run: |
-          IMAGE="us-central1-docker.pkg.dev/$PROJECT_ID/backend-images/$SERVICE_NAME"
+          IMAGE="gcr.io/$PROJECT_ID/$SERVICE_NAME"
           gcloud run deploy $SERVICE_NAME \
             --image $IMAGE \
             --region $REGION \
