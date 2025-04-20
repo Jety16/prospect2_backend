@@ -25,22 +25,17 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: 🔧 Set up Google Cloud CLI
+      - name: 🔧 Set up Google Cloud CLI (incluye beta para --source)
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ env.PROJECT_ID }}
           install_components: 'beta'
 
-      - name: 🐳 Build & Push Docker Image to GCR
+      - name: 🚀 Deploy to Cloud Run from fuente
         run: |
-          IMAGE="gcr.io/$PROJECT_ID/$SERVICE_NAME"
-          gcloud builds submit --tag $IMAGE .
-
-      - name: 🚀 Deploy to Cloud Run from Docker Image in GCR
-        run: |
-          IMAGE="gcr.io/$PROJECT_ID/$SERVICE_NAME"
           gcloud run deploy $SERVICE_NAME \
-            --image $IMAGE \
+            --source . \
             --region $REGION \
+            --project $PROJECT_ID \
             --platform managed \
             --allow-unauthenticated
