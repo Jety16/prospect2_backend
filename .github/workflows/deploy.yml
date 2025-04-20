@@ -9,9 +9,11 @@ env:
   PROJECT_ID: cloud-engineer-test-juanc
   REGION: us-central1
   SERVICE_NAME: prospect2-backend
+  IMAGE_NAME: us-central1-docker.pkg.dev/cloud-engineer-test-juanc/backend-images/prospect2-backend:latest
 
 jobs:
   deploy:
+
     name: 🔄 Build & Deploy to Cloud Run
     runs-on: ubuntu-latest
     environment: deploy
@@ -25,17 +27,20 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: 🔧 Set up Google Cloud CLI (incluye beta para --source)
+      - name: 🔧 Set up Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ env.PROJECT_ID }}
           install_components: 'beta'
 
-      - name: 🚀 Deploy to Cloud Run from fuente
+      - name: 🐳 Build & Push Docker Image to Artifact Registry
         run: |
-          gcloud run deploy $SERVICE_NAME \
-            --source . \
-            --region $REGION \
-            --project $PROJECT_ID \
+          gcloud builds submit --tag ${{ env.IMAGE_NAME }} .
+
+      - name: 🚀 Deploy to Cloud Run using Artifact Registry image
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image ${{ env.IMAGE_NAME }} \
+            --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated
